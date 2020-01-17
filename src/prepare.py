@@ -1,0 +1,223 @@
+#!/usr/bin/env python
+import pickle
+import tensorflow as tf
+import numpy as np
+import os
+import time
+import datetime
+import data_helpers
+import sys
+from text_cnn import TextCNN
+import os
+from tensorflow.contrib import learn
+import csv
+from time import sleep
+import pickle
+
+
+# ==================================== LOAD DATA ==================================================================
+
+# ----------------- Word embedding comments -------------------------------
+# Word embeddings for comments:
+print("loading data...")
+x = pickle.load(open("./mainbalancedpickle.p","rb"))
+revs, W, W2, word_idx_map, vocab, max_l = x[0], x[1], x[2], x[3], x[4], x[5]
+print("data loaded!")# Load data
+
+# ------------------------- User features: ----------------------------------------------------
+print('loading wgcca embeddings...')
+wgcca_embeddings = np.load('./../users/user_embeddings/user_gcca_embeddings.npz')
+print('wgcca embeddings loaded')
+
+# ids: Array len(283591)
+# Add one value at begin of array 'unknown' ?
+ids = np.concatenate((np.array(["unknown"]), wgcca_embeddings['ids']), axis=0)
+# User embeddings: matrix
+#  Shape is: (283591, 100)
+# rows is users, columns is embedding dimensions
+user_embeddings = wgcca_embeddings['G']
+unknown_vector = np.random.normal(size=(1,100))
+# Also add one embedding array to beginning of matrix randomly generated
+user_embeddings = np.concatenate((unknown_vector, user_embeddings), axis=0)
+user_embeddings = user_embeddings.astype(dtype='float32')
+# So first rows of both ids and user_embeddings is for unknown author
+
+# Make a dict with keys=author_name, value=index (corresponding to index of wgca embedding matrix)
+wgcca_dict = {}
+for i in range(len(ids)):
+    wgcca_dict[ids[i]] = int(i)
+
+# -------------------------------- Discourse features --------------------------------------
+csv_reader = csv.reader(open("./../discourse/discourse_features/discourse.csv"))
+topic_embeddings = []
+topic_ids = []
+for line in csv_reader:
+    topic_ids.append(line[0])
+    topic_embeddings.append(line[1:])
+topic_embeddings = np.asarray(topic_embeddings)
+topic_embeddings_size = len(topic_embeddings[0])
+topic_embeddings = topic_embeddings.astype(dtype='float32')
+print("topic emb size: ",topic_embeddings_size)
+
+topics_dict = {}
+for i in range(len(topic_ids)):
+    try:
+        topics_dict[topic_ids[i]] = int(i)
+    except TypeError:
+        print(i)
+
+# ???? Why change it to 100 ???
+max_l = 100
+
+# ============================ Hash data ===============================
+# ------------- Initialize lists -----------------------------------------
+# The following lists all have the same length. The index of the lists correspond to the same post_id (revs[i])
+
+# List with all train data comment text
+x_text = []
+# list with wgca embedding indices
+author_text_id = []
+# Same but for topic embeddings
+topic_text_id = []
+# Label values
+y = []
+
+# Same for these lists:
+test_x = []
+test_topic = []
+test_author = []
+test_y = []
+
+# -------------- Fill lists ------------------------------------------
+# Loop over all post dicts in revs:
+for i in range(len(revs)):
+    # If post belongs to train data split
+    if revs[i]['split']==1:
+        x_text.append(revs[i]['text'])
+        try:
+            # append wgcca embedding index corresponding to current author to list
+            author_text_id.append(wgcca_dict['"'+revs[i]['author']+'"'])
+        except KeyError:
+            author_text_id.append(0)
+        try:
+            # See above
+            topic_text_id.append(topics_dict['"'+revs[i]['topic']+'"'])
+        except KeyError:
+            topic_text_id.append(0)
+        # Label (sarcasm or not)
+        temp_y = revs[i]['label']
+        y.append(temp_y)
+    # Else belongs to test data split
+    else:
+        test_x.append(revs[i]['text'])
+        try:
+            test_author.append(wgcca_dict['"'+revs[i]['author']+'"'])
+        except:
+            test_author.append(0)
+        try:
+            test_topic.append(topics_dict['"'+revs[i]['topic']+'"'])
+        except:
+            test_topic.append(0)
+        test_y.append(revs[i]['label'])  
+
+y = np.asarray(y)
+test_y = np.asarray(test_y)
+
+# ------------------ get word embedding indices -------------------------
+x = []
+# For all posts:
+for i in range(len(x_text)):
+    # split the words in each post
+    # and add the index of the word embedding for each word in that post:
+    # To a list in list x
+	x.append(np.asarray([word_idx_map[word] for word in x_text[i].split()]))
+# So each list in x contains lists with the indices of the word embeddings of the words in that post/comment
+    
+x_test = []
+for i in range(len(test_x)):
+    x_test.append(np.asarray([word_idx_map[word] for word in test_x[i].split()]))
+
+# ???? padding of short posts/comments  ???
+# padded_inputs = tf.keras.preprocessing.sequence.pad_sequences(raw_inputs, padding='post')
+# https://www.tensorflow.org/guide/keras/masking_and_padding
+# Is this still necessary for Temporal Convolutional networks?
+for i in range(len(x)):
+    if( len(x[i]) < max_l ):
+    	x[i] = np.append(x[i],np.zeros(max_l-len(x[i])))		
+    elif( len(x[i]) > max_l ):
+    	x[i] = x[i][0:max_l]
+x = np.asarray(x)
+# After this step, every post contains the same number of word embeddings
+# Which is max_l
+
+for i in range(len(x_test)):
+    if( len(x_test[i]) < max_l ):
+        x_test[i] = np.append(x_test[i],np.zeros(max_l-len(x_test[i])))        
+    elif( len(x_test[i]) > max_l ):
+        x_test[i] = x_test[i][0:max_l]
+x_test = np.asarray(x_test)
+y_test = test_y
+
+topic_train = np.asarray(topic_text_id)
+topic_test = np.asarray(test_topic)
+author_train = np.asarray(author_text_id)
+author_test = np.asarray(test_author)
+
+
+os.makedirs("./input_data/")
+
+pickle.dump(x, open("./input_data/x.p", "wb"))
+pickle.dump(y, open("./input_data/y.p", "wb"))
+pickle.dump(W, open("./input_data/word_embs.p", "wb"))
+
+# # Fake data:
+# x = np.array(range(1,61))
+# y = np.array(range(61,121))
+# topic_train = np.array(range(121, 181))
+# author_train = np.array(range(181, 241))
+# x_test = x
+# y_test = y
+# topic_test = topic_train
+# author_test = author_train
+
+# # Create folds indices: 
+# shuffle_indices = np.random.permutation(np.arange(len(y)))
+# NFOLD = 5
+# leftover = (len(shuffle_indices) % NFOLD)
+# if leftover != 0:
+#     folds = np.split(
+#         shuffle_indices[:-leftover],
+#         NFOLD)
+# else:
+#     folds = np.split(
+#         shuffle_indices,
+#         NFOLD)
+        
+# fold1, fold2, fold3, fold4, fold5 = folds[0], folds[1], folds[2], folds[3], folds[4]
+
+
+# def create_fold(fold, x, y, topic, author):
+#     x_fold = x[fold]
+#     y_fold = y[fold]
+#     topic_fold = topic[fold]
+#     author_fold = author[fold]
+
+#     return([x_fold, y_fold, topic_fold, author_fold])
+
+# fold_ls1 = create_fold(fold1, x, y, topic_train, author_train)
+# fold_ls2 = create_fold(fold2, x, y, topic_train, author_train)
+# fold_ls3 = create_fold(fold3, x, y, topic_train, author_train)
+# fold_ls4 = create_fold(fold4, x, y, topic_train, author_train)
+# fold_ls5 = create_fold(fold5, x, y, topic_train, author_train)
+
+# fold_ls_test = [x_test, y_test, topic_test, author_test]
+
+# os.makedirs("./folds/")
+
+# pickle.dump(fold_ls1, open("./folds/fold_1.p", "wb"))
+# pickle.dump(fold_ls1, open("./folds/fold_2.p", "wb"))
+# pickle.dump(fold_ls1, open("./folds/fold_3.p", "wb"))
+# pickle.dump(fold_ls1, open("./folds/fold_4.p", "wb"))
+# pickle.dump(fold_ls1, open("./folds/fold_5.p", "wb"))
+
+# pickle.dump(fold_ls1, open("./folds/fold_test.p", "wb"))
