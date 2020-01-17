@@ -1,4 +1,4 @@
-# import pickle
+import pickle
 import numpy as np
 import os 
 
@@ -19,30 +19,45 @@ from sklearn.model_selection import GridSearchCV
 
 from tcn import TCN
 
-def give_data(n, features):
-    from sklearn.datasets import make_blobs
-
-    x, y = make_blobs(n_samples = n, centers = 2, n_features= features)
-    return x, y
-
 # will be filename of text file
 run_name = "run1"
 
-# x_train = pickle.load(open("./input_data/x.p", "rb"))
+# # Rows=words, columns=embedding dimensions
+# word_embs = pickle.load(open(""./input_data/word_embs.p"", "rb"))
+# # Rows=sentences, columns=word indices
+# x = pickle.load(open("./input_data/x.p", "rb"))
+# # Create 3d tensor of shape [sentences,words,embeddingdims]
+# x_train = tf.nn.embedding_lookup(params=word_embs, ids=x, max_norm=None, name=None)
 # y_train = pickle.load(open("./input_data/y.p", "rb"))
 
-x_train, y_train = give_data(300, 20)
+# Fake data:
+# x_train, y_train = give_data(300, 20)
+# Sentences, words per sentence, dimensions per word for embedding
+x_train = np.random.normal(size = (200, 100, 300))
+y_train = np.random.randint(low = 0, high = 2, size = 200)
 
-input_shape = (1, 20) # Timesteps, dimensions
+input_shape = (x_train.shape[1], x_train.shape[2]) # words/sentence, word_emb dimensions
 
 seed = 7
 np.random.seed(seed)
 
+# Calculate number of blocks:
+def calc_dilations(filter_size, field):
+    import math
+    max_dil = field / filter_size
+    max_dil = math.ceil(math.log(max_dil) / math.log(2))
+    dil_list = [2**i for i in range(0,max_dil+1)]
+    return(dil_list)
+
+
 # ======== parameters for TCN =====================
 # TCN params
-nb_filters = 32
+nb_filters = 8
 filter_size = 2
-dilation_list = (1,2,4,8,16,32)
+dilation_list = calc_dilations(
+    filter_size = filter_size,
+    field = x_train.shape[1]
+)
 padding = "same"
 use_skip_connections = True
 dropout_rate = 0.0
@@ -50,7 +65,10 @@ activation = "relu"
 kernel_initializer = "he_normal"
 use_batch_norm = True
 use_layer_norm = True
+nb_stacks = 1
 
+print("Dilation list:")
+print(dilation_list)
 
 def create_model(optimizer="Adam", init="he_normal"):
 
@@ -77,7 +95,7 @@ def create_model(optimizer="Adam", init="he_normal"):
     
     model = Model(inputs=[i], outputs=[o])
     # Compile model
-    model.compile(loss='binary_crossentropy', optimizer='Adam', metrics=['Accuracy'])
+    model.compile(loss='binary_crossentropy', optimizer='Adam', metrics=['accuracy'])
     
     # history = model.fit(x_train, y_train, 
     #                     validation_data=[x_val, y_val],
@@ -88,23 +106,26 @@ def create_model(optimizer="Adam", init="he_normal"):
     # finally we have to make sure that history object and model are returned
     return model #, history
 
-# plot_model(create_model)
+
 model = create_model()
+print("Model params:", model.count_params())
+print(model.summary())
+# plot_model(model)
+# result = model.fit(x_train, y_train, batch_size = 100, epochs = 10)
 
-result = model.fit(x_train, y_train)
-
-model_CV = KerasClassifier(build_fn=create_model, verbose=1)
+model_CV = KerasClassifier(
+    build_fn=create_model)
 
 # define the grid search parameters
-init_mode = ['he_normal']
-batch_size = [10]
+# init_mode = ['he_normal']
+batch_size = [1000, 5000]
 epochs = [10]
 
 param_grid = dict(
-    init_mode=init_mode,
+    # init_mode=init_mode,
     batch_size = batch_size,
     epochs = epochs)
-grid = GridSearchCV(estimator=model_CV, param_grid=param_grid, n_jobs=-1, cv=3)
+grid = GridSearchCV(estimator=model_CV, param_grid=param_grid, n_jobs=-1, cv=3, verbose = 0)
 grid_result = grid.fit(x_train, y_train)
 
 
@@ -120,12 +141,12 @@ for mean, stdev, param in zip(means, stds, params):
 print("This info will also be written to a file")
 # Report in txt file:
 with open(f"report_{run_name}.txt", "w") as file:
-    file.writelines(f'Best Accuracy for {grid_result.best_score_} using {grid_result.best_params_}')
+    file.writelines(f'Best Accuracy for {grid_result.best_score_} using {grid_result.best_params_}\n')
     means = grid_result.cv_results_['mean_test_score']
     stds = grid_result.cv_results_['std_test_score']
     params = grid_result.cv_results_['params']
     for mean, stdev, param in zip(means, stds, params):
-        file.writelines(f' mean={mean:.4}, std={stdev:.4} using {param}')
+        file.writelines(f' mean={mean:.4}, std={stdev:.4} using {param}\n')
 
 print(f"report_{run_name}.txt has been created in {os.getcwd()}")
 print("Run finished")
