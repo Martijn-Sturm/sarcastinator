@@ -16,11 +16,13 @@ from sklearn.model_selection import GridSearchCV
 from contextlib import redirect_stdout
 # Local imports
 from logger import get_logger
+from logger import config_thr_exc_log
 # from temporal import tcn1
 from tcn import TCN
 
-# Activate logger
-logger = get_logger()
+# Loggers:
+logger = get_logger(filename="gridsearch", name=__name__)
+config_thr_exc_log()
 
 # PARAMS:
 CV = 3
