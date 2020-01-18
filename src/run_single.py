@@ -21,21 +21,23 @@ logger = get_logger(filename="single_run", name=__name__)
 config_thr_exc_log()
 
 # Params:
-batch_size = 50
+batch_size = 4000
 epochs = 10
 
-# # Rows=words, columns=embedding dimensions
-# word_embs = pickle.load(open(""./input_data/train/word_embs.p"", "rb"))
-# # Rows=sentences, columns=word indices
-# x_train = pickle.load(open("./input_data/train/x.p", "rb"))
-# # Create 3d tensor of shape [sentences,words,embeddingdims]
-# x_train = tf.nn.embedding_lookup(params=word_embs, ids=x, max_norm=None, name=None)
-# y_train = pickle.load(open("./input_data/train/y.p", "rb"))
+# Real data:
+# Rows=words, columns=embedding dimensions
+word_embs = pickle.load(open("./input_data/train/word_embs.p", "rb"))
+# Rows=sentences, columns=word indices
+x_train = pickle.load(open("./input_data/train/x.p", "rb"))
+# Create 3d tensor of shape [sentences,words,embeddingdims]
+x_train = tf.nn.embedding_lookup(
+    params=word_embs, ids=x_train, max_norm=None, name=None)
+y_train = pickle.load(open("./input_data/train/y.p", "rb"))
 
-# Fake data:
-# Sentences, words per sentence, dimensions per word for embedding
-x_train = np.random.normal(size=(200, 100, 300))
-y_train = np.random.randint(low=0, high=2, size=200)
+# # Fake data:
+# # Sentences, words per sentence, dimensions per word for embedding
+# x_train = np.random.normal(size=(200, 100, 300))
+# y_train = np.random.randint(low=0, high=2, size=200)
 
 # Input shape:
 input_shape = (x_train.shape[1], x_train.shape[2])  # words/sentence, word_emb dimensions
@@ -84,15 +86,17 @@ logger.info(f"Accuracy per epoch: {accs}")
 # Evaluation
 logger.warning("Evaluation is initiated")
 
-# # Rows=words, columns=embedding dimensions
-# word_embs = pickle.load(open(""./input_data/test/word_embs.p"", "rb"))
-# # Rows=sentences, columns=word indices
-# x_test = pickle.load(open("./input_data/test/x.p", "rb"))
-# # Create 3d tensor of shape [sentences,words,embeddingdims]
-# x_test = tf.nn.embedding_lookup(params=word_embs, ids=x, max_norm=None, name=None)
-# y_test = pickle.load(open("./input_data/test/y.p", "rb"))
+# Rows=words, columns=embedding dimensions
+word_embs = pickle.load(open("./input_data/test/word_embs.p", "rb"))
+# Rows=sentences, columns=word indices
+x_test = pickle.load(open("./input_data/test/x.p", "rb"))
+# Create 3d tensor of shape [sentences,words,embeddingdims]
+x_test = tf.nn.embedding_lookup(
+    params=word_embs, ids=x_test, max_norm=None, name=None)
+y_test = pickle.load(open("./input_data/test/y.p", "rb"))
+
 eval_result = model.evaluate(
-    x_train, y_train, batch_size=batch_size
+    x_test, y_test, batch_size=batch_size
 )
 logger.warning("Evaluation ended.")
 
