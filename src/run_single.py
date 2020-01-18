@@ -39,6 +39,11 @@ word_embs_dtype = str(word_embs.dtype)
 logger.debug(f"dtype of word_embs: {word_embs_dtype}")
 x_train_dtype = str(x_train.dtype)
 logger.debug(f"dtype of x_train: {x_train_dtype}")
+x_train_dtype = str(x_train.dtype)
+logger.debug(f"dtype of x_train: {x_train_dtype}")
+x_train = tf.cast(x_train, dtype=tf.int64)
+logger.debug(f"dtype of x_train after cast: {x_train_dtype}")
+
 
 logger.info(f"word_embs shape: {word_embs.shape}")
 logger.info(f"x_train shape: {x_train.shape}")
@@ -106,7 +111,7 @@ logger.warning("Evaluation is initiated")
 # Rows=words, columns=embedding dimensions
 word_embs = pickle.load(open("./input_data/test/word_embs.p", "rb"))
 # Rows=sentences, columns=word indices
-x_test = pickle.load(open("./input_data/test/x.p", "rb"))
+x_test = tf.cast(pickle.load(open("./input_data/test/x.p", "rb")), dtype=tf.int64)
 logger.info(f"x_test shape: {x_test.shape}")
 # Create 3d tensor of shape [sentences,words,embeddingdims]
 x_test = tf.nn.embedding_lookup(
