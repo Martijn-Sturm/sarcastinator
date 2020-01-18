@@ -133,7 +133,7 @@ for i in range(len(revs)):
             test_topic.append(topics_dict['"'+revs[i]['topic']+'"'])
         except:
             test_topic.append(0)
-        test_y.append(revs[i]['label'])  
+        test_y.append(revs[i]['label'])
 
 y = np.asarray(y)
 test_y = np.asarray(test_y)
@@ -179,6 +179,23 @@ topic_test = np.asarray(test_topic)
 author_train = np.asarray(author_text_id)
 author_test = np.asarray(test_author)
 
+# Process labels:
+logger.warning("Transforming labels from 2d to 1d array")
+# Train y:
+if y.shape[1] != 2:
+    raise Exception("Y has not expected dimensions",
+                    "y shape:", y.shape)
+y = y[:, 0]
+if len(y.shape != 1):
+    raise Exception("New y has not 1 dimension. Shape:", y.shape) 
+# Test y:
+if y_test.shape[1] != 2:
+    raise Exception("Y has not expected dimensions",
+                    "y shape:", y.shape)
+y_test = y_test[:, 0]
+if len(y_test.shape != 1):
+    raise Exception("New test_y has not 1 dimension. Shape:", y_test.shape)
+logger.warning("Transforming labels finished")
 
 # Write train data to pickles:
 logger.warning("Writing train data to files")
