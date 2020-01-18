@@ -29,10 +29,27 @@ epochs = 10
 word_embs = pickle.load(open("./input_data/train/word_embs.p", "rb"))
 # Rows=sentences, columns=word indices
 x_train = pickle.load(open("./input_data/train/x.p", "rb"))
+
+# DEBUG CODE:
+word_embs_type = str(type(word_embs))
+logger.debug(f"word_embs object type: {word_embs_type}")
+x_train_type = str(type(x_train))
+logger.debug(f"x_train object type: {x_train_type}")
+word_embs_dtype = str(word_embs.dtype)
+logger.debug(f"dtype of word_embs: {word_embs_dtype}")
+x_train_dtype = str(x_train.dtype)
+logger.debug(f"dtype of x_train: {x_train_dtype}")
+
+logger.info(f"word_embs shape: {word_embs.shape}")
+logger.info(f"x_train shape: {x_train.shape}")
+
 # Create 3d tensor of shape [sentences,words,embeddingdims]
 x_train = tf.nn.embedding_lookup(
     params=word_embs, ids=x_train, max_norm=None, name=None)
+logger.info(f"x_train shape after embedding lookup: {x_train.shape}")
+
 y_train = pickle.load(open("./input_data/train/y.p", "rb"))
+logger.info(f"y_train shape: {y_train.shape}")
 
 # # Fake data:
 # # Sentences, words per sentence, dimensions per word for embedding
@@ -90,10 +107,13 @@ logger.warning("Evaluation is initiated")
 word_embs = pickle.load(open("./input_data/test/word_embs.p", "rb"))
 # Rows=sentences, columns=word indices
 x_test = pickle.load(open("./input_data/test/x.p", "rb"))
+logger.info(f"x_test shape: {x_test.shape}")
 # Create 3d tensor of shape [sentences,words,embeddingdims]
 x_test = tf.nn.embedding_lookup(
     params=word_embs, ids=x_test, max_norm=None, name=None)
+logger.info(f"x_test shape after embedding lookup: {x_test.shape}")
 y_test = pickle.load(open("./input_data/test/y.p", "rb"))
+logger.info(f"y_test shape: {y_test.shape}")
 
 eval_result = model.evaluate(
     x_test, y_test, batch_size=batch_size
