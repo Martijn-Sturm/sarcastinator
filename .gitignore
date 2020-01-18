@@ -13,5 +13,5 @@
 /src/models
 
 
-/src/logs
-/src/folds
+/src/logs/
+/src/folds/
