@@ -1,33 +1,39 @@
 #!/usr/bin/env python
 import pickle
-import tensorflow as tf
 import numpy as np
 import os
 import time
 import datetime
 import data_helpers
 import sys
-from text_cnn import TextCNN
 import os
-from tensorflow.contrib import learn
 import csv
 from time import sleep
 import pickle
 
+from logger import get_logger
+from logger import config_thr_exc_log
 
+# Loggers
+logger = get_logger(filename="perpare", name=__main__)
+config_thr_exc_log()
+
+logger.warning("================\nPreparing data initiated...\n================\n")
 # ==================================== LOAD DATA ==================================================================
 
 # ----------------- Word embedding comments -------------------------------
 # Word embeddings for comments:
-print("loading data...")
+logger.warning("loading word embedding data...")
 x = pickle.load(open("./mainbalancedpickle.p","rb"))
 revs, W, W2, word_idx_map, vocab, max_l = x[0], x[1], x[2], x[3], x[4], x[5]
-print("data loaded!")# Load data
+logger.warning("word embedding data loaded!")
+logger.info(f"Max length of sentences is: {max_l}")
 
 # ------------------------- User features: ----------------------------------------------------
-print('loading wgcca embeddings...')
+logger.warning("Starting user feature processing:")
+logger.warning('loading wgcca embeddings...')
 wgcca_embeddings = np.load('./../users/user_embeddings/user_gcca_embeddings.npz')
-print('wgcca embeddings loaded')
+logger.warning('wgcca embeddings loaded')
 
 # ids: Array len(283591)
 # Add one value at begin of array 'unknown' ?
@@ -36,7 +42,13 @@ ids = np.concatenate((np.array(["unknown"]), wgcca_embeddings['ids']), axis=0)
 #  Shape is: (283591, 100)
 # rows is users, columns is embedding dimensions
 user_embeddings = wgcca_embeddings['G']
-unknown_vector = np.random.normal(size=(1,100))
+try:
+    user_emb_shape = user_embeddings.shape
+    logger.info(f"user embedding shape: {user_emb_shape}")
+except Exception:
+    logger.debug(f"Not possible to get shape of user embeddings and log")
+
+unknown_vector = np.random.normal(size=(1, 100))
 # Also add one embedding array to beginning of matrix randomly generated
 user_embeddings = np.concatenate((unknown_vector, user_embeddings), axis=0)
 user_embeddings = user_embeddings.astype(dtype='float32')
@@ -46,8 +58,10 @@ user_embeddings = user_embeddings.astype(dtype='float32')
 wgcca_dict = {}
 for i in range(len(ids)):
     wgcca_dict[ids[i]] = int(i)
+logger.warning("User feature processing finished")
 
 # -------------------------------- Discourse features --------------------------------------
+logger.warning("Starting Topic feature processing")
 csv_reader = csv.reader(open("./../discourse/discourse_features/discourse.csv"))
 topic_embeddings = []
 topic_ids = []
@@ -55,21 +69,27 @@ for line in csv_reader:
     topic_ids.append(line[0])
     topic_embeddings.append(line[1:])
 topic_embeddings = np.asarray(topic_embeddings)
-topic_embeddings_size = len(topic_embeddings[0])
 topic_embeddings = topic_embeddings.astype(dtype='float32')
-print("topic emb size: ",topic_embeddings_size)
+try:
+    topic_embeddings_size = len(topic_embeddings[0])
+    logger.info(f"topic emb size: {topic_embeddings_size}")
+except Exception:
+    logger.debug("Not able to get and log topic embedding size")
 
 topics_dict = {}
 for i in range(len(topic_ids)):
     try:
         topics_dict[topic_ids[i]] = int(i)
     except TypeError:
-        print(i)
+        logger.error(f"Was not able to retrieve {i} in topic_ids")
 
 # ???? Why change it to 100 ???
 max_l = 100
-
+logger.warning(f"Max_l was manually reset to: {max_l}")
+logger.warning("Topic feature processing finished")
 # ============================ Hash data ===============================
+
+logger.warning("Starting with hashing of data")
 # ------------- Initialize lists -----------------------------------------
 # The following lists all have the same length. The index of the lists correspond to the same post_id (revs[i])
 
@@ -88,6 +108,7 @@ test_topic = []
 test_author = []
 test_y = []
 
+logger.warning("Filling data variables")
 # -------------- Fill lists ------------------------------------------
 # Loop over all post dicts in revs:
 for i in range(len(revs)):
@@ -124,15 +145,16 @@ y = np.asarray(y)
 test_y = np.asarray(test_y)
 
 # ------------------ get word embedding indices -------------------------
+logger.warning("Process comments")
 x = []
 # For all posts:
 for i in range(len(x_text)):
     # split the words in each post
     # and add the index of the word embedding for each word in that post:
     # To a list in list x
-	x.append(np.asarray([word_idx_map[word] for word in x_text[i].split()]))
+    x.append(np.asarray([word_idx_map[word] for word in x_text[i].split()]))
 # So each list in x contains lists with the indices of the word embeddings of the words in that post/comment
-    
+
 x_test = []
 for i in range(len(test_x)):
     x_test.append(np.asarray([word_idx_map[word] for word in test_x[i].split()]))
@@ -142,18 +164,18 @@ for i in range(len(test_x)):
 # https://www.tensorflow.org/guide/keras/masking_and_padding
 # Is this still necessary for Temporal Convolutional networks?
 for i in range(len(x)):
-    if( len(x[i]) < max_l ):
-    	x[i] = np.append(x[i],np.zeros(max_l-len(x[i])))		
-    elif( len(x[i]) > max_l ):
-    	x[i] = x[i][0:max_l]
+    if(len(x[i]) < max_l):
+        x[i] = np.append(x[i], np.zeros(max_l-len(x[i])))		
+    elif(len(x[i]) > max_l):
+        x[i] = x[i][0:max_l]
 x = np.asarray(x)
 # After this step, every post contains the same number of word embeddings
 # Which is max_l
 
 for i in range(len(x_test)):
-    if( len(x_test[i]) < max_l ):
-        x_test[i] = np.append(x_test[i],np.zeros(max_l-len(x_test[i])))        
-    elif( len(x_test[i]) > max_l ):
+    if(len(x_test[i]) < max_l):
+        x_test[i] = np.append(x_test[i], np.zeros(max_l-len(x_test[i])))
+    elif(len(x_test[i]) > max_l):
         x_test[i] = x_test[i][0:max_l]
 x_test = np.asarray(x_test)
 y_test = test_y
@@ -164,12 +186,27 @@ author_train = np.asarray(author_text_id)
 author_test = np.asarray(test_author)
 
 
-os.makedirs("./input_data/")
+# Write train data to pickles:
+logger.warning("Writing train data to files")
+os.makedirs("./input_data/train/")
 
-pickle.dump(x, open("./input_data/x.p", "wb"))
-pickle.dump(y, open("./input_data/y.p", "wb"))
-pickle.dump(W, open("./input_data/word_embs.p", "wb"))
+pickle.dump(x, open("./input_data/train/x.p", "wb"))
+pickle.dump(y, open("./input_data/train/y.p", "wb"))
+pickle.dump(W, open("./input_data/train/word_embs.p", "wb"))
+pickle.dump(topic_train, open("./input_data/train/topic_train.p", "wb"))
+pickle.dump(author_train, open("./input_data/train/author_train.p", "wb"))
 
+# Write test data to pickles:
+logger.warning("Writing test data to files")
+os.makedirs("./input_data/test/")
+
+pickle.dump(x_test, open("./input_data/test/x.p", "wb"))
+pickle.dump(y_test, open("./input_data/test/y.p", "wb"))
+pickle.dump(W, open("./input_data/test/word_embs.p", "wb"))
+pickle.dump(topic_test, open("./input_data/test/topic_test.p", "wb"))
+pickle.dump(author_test, open("./input_data/test/author_test.p", "wb"))
+
+logger.warning("\n===============\nPreparing finished!\n===============")
 # # Fake data:
 # x = np.array(range(1,61))
 # y = np.array(range(61,121))
