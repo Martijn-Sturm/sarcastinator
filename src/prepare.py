@@ -2,20 +2,14 @@
 import pickle
 import numpy as np
 import os
-import time
-import datetime
-import data_helpers
-import sys
-import os
 import csv
-from time import sleep
-import pickle
+
 
 from logger import get_logger
 from logger import config_thr_exc_log
 
 # Loggers
-logger = get_logger(filename="perpare", name=__main__)
+logger = get_logger(filename="prepare", name=__name__)
 config_thr_exc_log()
 
 logger.warning("================\nPreparing data initiated...\n================\n")
