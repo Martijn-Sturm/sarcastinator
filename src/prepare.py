@@ -186,14 +186,14 @@ if y.shape[1] != 2:
     raise Exception("Y has not expected dimensions",
                     "y shape:", y.shape)
 y = y[:, 0]
-if len(y.shape != 1):
+if len(y.shape) != 1:
     raise Exception("New y has not 1 dimension. Shape:", y.shape) 
 # Test y:
 if y_test.shape[1] != 2:
     raise Exception("Y has not expected dimensions",
                     "y shape:", y.shape)
 y_test = y_test[:, 0]
-if len(y_test.shape != 1):
+if len(y_test.shape) != 1:
     raise Exception("New test_y has not 1 dimension. Shape:", y_test.shape)
 logger.warning("Transforming labels finished")
 
