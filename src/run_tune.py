@@ -30,9 +30,9 @@ epochs = 50
 # Real data:
 logger.warning("Loading train data...")
 try:
-    x_train = pickle.load(open("./tensor/train/x_tensor.p", "rb"))
-    author_train = pickle.load(open("./tensor/train/user_tensor.p", "rb"))
-    topic_train = pickle.load(open("./tensor/train/topic_tensor.p", "rb"))
+    x_train = np.load('./tensor/train/x_tensor.npy')
+    author_train = np.load('./tensor/train/user_tensor.npy')
+    topic_train = np.load('./tensor/train/topic_tensor.npy')
 except FileNotFoundError:
     # X
     x_embs = pickle.load(open("./input_data/embs/word_embs.p", "rb"))
