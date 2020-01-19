@@ -27,44 +27,44 @@ epochs = 50
 
 # ====================== LOAD DATA ====================================
 
-# # Real data:
-# logger.warning("Loading train data...")
-# x_train = pickle.load(open("./tensor/train/x_tensor.p", "rb"))
-# author_train = pickle.load(open("./tensor/train/user_tensor.p", "rb"))
-# topic_train = pickle.load(open("./tensor/train/topic_tensor.p", "rb"))
+# Real data:
+logger.warning("Loading train data...")
+x_train = pickle.load(open("./tensor/train/x_tensor.p", "rb"))
+author_train = pickle.load(open("./tensor/train/user_tensor.p", "rb"))
+topic_train = pickle.load(open("./tensor/train/topic_tensor.p", "rb"))
 
-# logger.info(f"x_train shape: {x_train.shape}")
-# logger.info(f"author_train shape: {author_train.shape}")
-# logger.info(f"topic_train shape: {topic_train.shape}")
+logger.info(f"x_train shape: {x_train.shape}")
+logger.info(f"author_train shape: {author_train.shape}")
+logger.info(f"topic_train shape: {topic_train.shape}")
 
-# # Labels
-# y_train = pickle.load(open("./tensor/train/y.p", "rb"))
-# logger.info(f"y_train shape: {y_train.shape}")
-# logger.warning("Loading data is finished")
+# Labels
+y_train = pickle.load(open("./tensor/train/y.p", "rb"))
+logger.info(f"y_train shape: {y_train.shape}")
+logger.warning("Loading data is finished")
 
-# # shuffle data
-# sample_set = set([
-#     x_train.shape[0],
-#     y_train.shape[0],
-#     author_train.shape[0],
-#     topic_train.shape[0]])
+# shuffle data
+sample_set = set([
+    x_train.shape[0],
+    y_train.shape[0],
+    author_train.shape[0],
+    topic_train.shape[0]])
 
-# if len(sample_set) > 0:
-#     raise Exception("Different sample sizes for input features")
+if len(sample_set) > 0:
+    raise Exception("Different sample sizes for input features")
 
-# shuffle_indices = np.random.permutation(np.arange(len(y_train)))
-# x_train = x_train[shuffle_indices]
-# y_train = y_train[shuffle_indices]
-# author_train = author_train[shuffle_indices]
-# topic_train = topic_train[shuffle_indices]
+shuffle_indices = np.random.permutation(np.arange(len(y_train)))
+x_train = x_train[shuffle_indices]
+y_train = y_train[shuffle_indices]
+author_train = author_train[shuffle_indices]
+topic_train = topic_train[shuffle_indices]
 
-# Fake data:
-# Sentences, words per sentence, dimensions per word for embedding
-sample_size = 50
-x_train = np.random.normal(size=(sample_size, 100, 300))
-topic_train = np.random.normal(size=(sample_size, 100))
-author_train = np.random.normal(size=(sample_size, 100))
-y_train = np.random.randint(low=0, high=2, size=sample_size)
+# # Fake data:
+# # Sentences, words per sentence, dimensions per word for embedding
+# sample_size = 50
+# x_train = np.random.normal(size=(sample_size, 100, 300))
+# topic_train = np.random.normal(size=(sample_size, 100))
+# author_train = np.random.normal(size=(sample_size, 100))
+# y_train = np.random.randint(low=0, high=2, size=sample_size)
 
 
 # =========================== BUILD MODEL ===================================
