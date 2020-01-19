@@ -66,7 +66,7 @@ sample_set = set([
     author_train.shape[0],
     topic_train.shape[0]])
 
-if len(sample_set) > 0:
+if len(sample_set) > 1:
     raise Exception("Different sample sizes for input features")
 
 shuffle_indices = np.random.permutation(np.arange(len(y_train)))
