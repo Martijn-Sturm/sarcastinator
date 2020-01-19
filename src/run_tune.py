@@ -29,16 +29,33 @@ epochs = 50
 
 # Real data:
 logger.warning("Loading train data...")
-x_train = pickle.load(open("./tensor/train/x_tensor.p", "rb"))
-author_train = pickle.load(open("./tensor/train/user_tensor.p", "rb"))
-topic_train = pickle.load(open("./tensor/train/topic_tensor.p", "rb"))
+try:
+    x_train = pickle.load(open("./tensor/train/x_tensor.p", "rb"))
+    author_train = pickle.load(open("./tensor/train/user_tensor.p", "rb"))
+    topic_train = pickle.load(open("./tensor/train/topic_tensor.p", "rb"))
+except FileNotFoundError:
+    # X
+    x_embs = pickle.load(open("./input_data/embs/word_embs.p", "rb"))
+    x_idx = pickle.loadopen("./input_data/train/x.p", "rb")()
+    x_train = tf.nn.embedding_lookup(
+        params=x_embs, ids=x_idx)
+    # Author
+    author_embs = pickle.load(open("./input_data/embs/user_embs.p", "rb"))
+    author_idx = pickle.loadopen("./input_data/train/author_train.p", "rb")()
+    author_train = tf.nn.embedding_lookup(
+        params=author_embs, ids=author_idx)
+    # Topic
+    topic_embs = pickle.load(open("./input_data/embs/topic_embs.p", "rb"))
+    topic_idx = pickle.loadopen("./input_data/train/topic_train.p", "rb")()
+    topic_train = tf.nn.embedding_lookup(
+        params=topic_embs, ids=topic_idx)
 
 logger.info(f"x_train shape: {x_train.shape}")
 logger.info(f"author_train shape: {author_train.shape}")
 logger.info(f"topic_train shape: {topic_train.shape}")
 
 # Labels
-y_train = pickle.load(open("./tensor/train/y.p", "rb"))
+y_train = pickle.load(open("./input_data/train/y.p", "rb"))
 logger.info(f"y_train shape: {y_train.shape}")
 logger.warning("Loading data is finished")
 
