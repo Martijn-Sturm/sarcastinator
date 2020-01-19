@@ -298,15 +298,15 @@ logger.info(f"shape topic_tensor_test {topic_tensor_test.shape}")
 logger.warning("Writing tensors to files")
 os.makedirs("./tensor/train/")
 
-pickle.dump(x_tensor_train, open("./tensor/train/x_tensor.p", "wb"))
-pickle.dump(author_tensor_train, open("./tensor/train/user_tensor.p", "wb"))
-pickle.dump(topic_tensor_train, open("./tensor/train/topic_tensor.p", "wb"))
+np.save('./tensor/train/x_tensor.npy', x_tensor_train, allow_pickle=False)
+np.save('./tensor/train/user_tensor.npy', author_tensor_train, allow_pickle=False)
+np.save('./tensor/train/topic_tensor.npy', topic_tensor_train, allow_pickle=False)
 
 os.makedirs("./tensor/test/")
 
-pickle.dump(x_tensor_test, open("./tensor/test/x_tensor.p", "wb"))
-pickle.dump(author_tensor_test, open("./tensor/test/user_tensor.p", "wb"))
-pickle.dump(topic_tensor_test, open("./tensor/test/topic_tensor.p", "wb"))
+np.save('./tensor/test/x_tensor.npy', x_tensor_test, allow_pickle=False)
+np.save('./tensor/test/user_tensor.npy', author_tensor_test, allow_pickle=False)
+np.save('./tensor/test/topic_tensor.npy', topic_tensor_test, allow_pickle=False)
 
 logger.warning("\n===============\nPreparing finished!\n===============")
 # # Fake data:
