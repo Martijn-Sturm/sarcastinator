@@ -271,42 +271,42 @@ pickle.dump(user_embeddings, open("./input_data/embs/user_embs.p", "wb"))
 pickle.dump(topic_embeddings, open("./input_data/embs/topic_embs.p", "wb"))
 
 
-# Create tensor imputs:
-# Train
-x_tensor_train = tf.nn.embedding_lookup(
-    params=W, ids=x, max_norm=None, name=None)
-logger.info(f"shape x_tensor_train {x_tensor_train.shape}")
-author_tensor_train = tf.nn.embedding_lookup(
-    params=user_embeddings, ids=author_train, max_norm=None, name=None)
-logger.info(f"shape author_tensor_train {author_tensor_train.shape}")
-topic_tensor_train = tf.nn.embedding_lookup(
-    params=topic_embeddings, ids=topic_train, max_norm=None, name=None)
-logger.info(f"shape topic_tensor_train {topic_tensor_train.shape}")
+# # Create tensor imputs:
+# # Train
+# x_tensor_train = tf.nn.embedding_lookup(
+#     params=W, ids=x, max_norm=None, name=None)
+# logger.info(f"shape x_tensor_train {x_tensor_train.shape}")
+# author_tensor_train = tf.nn.embedding_lookup(
+#     params=user_embeddings, ids=author_train, max_norm=None, name=None)
+# logger.info(f"shape author_tensor_train {author_tensor_train.shape}")
+# topic_tensor_train = tf.nn.embedding_lookup(
+#     params=topic_embeddings, ids=topic_train, max_norm=None, name=None)
+# logger.info(f"shape topic_tensor_train {topic_tensor_train.shape}")
 
-# Test
-x_tensor_test = tf.nn.embedding_lookup(
-    params=W, ids=x_test, max_norm=None, name=None)
-logger.info(f"shape x_tensor_test {x_tensor_test.shape}")
-author_tensor_test = tf.nn.embedding_lookup(
-    params=user_embeddings, ids=author_test, max_norm=None, name=None)
-logger.info(f"shape author_tensor_test {author_tensor_test.shape}")
-topic_tensor_test = tf.nn.embedding_lookup(
-    params=topic_embeddings, ids=topic_test, max_norm=None, name=None)
-logger.info(f"shape topic_tensor_test {topic_tensor_test.shape}")
+# # Test
+# x_tensor_test = tf.nn.embedding_lookup(
+#     params=W, ids=x_test, max_norm=None, name=None)
+# logger.info(f"shape x_tensor_test {x_tensor_test.shape}")
+# author_tensor_test = tf.nn.embedding_lookup(
+#     params=user_embeddings, ids=author_test, max_norm=None, name=None)
+# logger.info(f"shape author_tensor_test {author_tensor_test.shape}")
+# topic_tensor_test = tf.nn.embedding_lookup(
+#     params=topic_embeddings, ids=topic_test, max_norm=None, name=None)
+# logger.info(f"shape topic_tensor_test {topic_tensor_test.shape}")
 
-# Write embeddings to pickles:
-logger.warning("Writing tensors to files")
-os.makedirs("./tensor/train/")
+# # Write tensors to pickles:
+# logger.warning("Writing tensors to files")
+# os.makedirs("./tensor/train/")
 
-pickle.dump(x_tensor_train, open("./tensor/train/x_tensor.p", "wb"))
-pickle.dump(author_tensor_train, open("./tensor/train/user_tensor.p", "wb"))
-pickle.dump(topic_tensor_train, open("./tensor/train/topic_tensor.p", "wb"))
+# pickle.dump(x_tensor_train, open("./tensor/train/x_tensor.p", "wb"))
+# pickle.dump(author_tensor_train, open("./tensor/train/user_tensor.p", "wb"))
+# pickle.dump(topic_tensor_train, open("./tensor/train/topic_tensor.p", "wb"))
 
-os.makedirs("./tensor/test/")
+# os.makedirs("./tensor/test/")
 
-pickle.dump(x_tensor_test, open("./tensor/test/x_tensor.p", "wb"))
-pickle.dump(author_tensor_test, open("./tensor/test/user_tensor.p", "wb"))
-pickle.dump(topic_tensor_test, open("./tensor/test/topic_tensor.p", "wb"))
+# pickle.dump(x_tensor_test, open("./tensor/test/x_tensor.p", "wb"))
+# pickle.dump(author_tensor_test, open("./tensor/test/user_tensor.p", "wb"))
+# pickle.dump(topic_tensor_test, open("./tensor/test/topic_tensor.p", "wb"))
 
 logger.warning("\n===============\nPreparing finished!\n===============")
 # # Fake data:
