@@ -160,7 +160,7 @@ for i in range(len(test_x)):
 # Is this still necessary for Temporal Convolutional networks?
 for i in range(len(x)):
     if(len(x[i]) < max_l):
-        x[i] = np.append(x[i], np.zeros(max_l-len(x[i])))		
+        x[i] = np.append(x[i], np.zeros(max_l-len(x[i])))
     elif(len(x[i]) > max_l):
         x[i] = x[i][0:max_l]
 x = np.asarray(x)
@@ -188,7 +188,7 @@ if y.shape[1] != 2:
                     "y shape:", y.shape)
 y = y[:, 0]
 if len(y.shape) != 1:
-    raise Exception("New y has not 1 dimension. Shape:", y.shape) 
+    raise Exception("New y has not 1 dimension. Shape:", y.shape)
 # Test y:
 if y_test.shape[1] != 2:
     raise Exception("Y has not expected dimensions",
@@ -271,42 +271,42 @@ pickle.dump(user_embeddings, open("./input_data/embs/user_embs.p", "wb"))
 pickle.dump(topic_embeddings, open("./input_data/embs/topic_embs.p", "wb"))
 
 
-# # Create tensor imputs:
-# # Train
-# x_tensor_train = tf.nn.embedding_lookup(
-#     params=W, ids=x, max_norm=None, name=None)
-# logger.info(f"shape x_tensor_train {x_tensor_train.shape}")
-# author_tensor_train = tf.nn.embedding_lookup(
-#     params=user_embeddings, ids=author_train, max_norm=None, name=None)
-# logger.info(f"shape author_tensor_train {author_tensor_train.shape}")
-# topic_tensor_train = tf.nn.embedding_lookup(
-#     params=topic_embeddings, ids=topic_train, max_norm=None, name=None)
-# logger.info(f"shape topic_tensor_train {topic_tensor_train.shape}")
+# Create tensor imputs:
+# Train
+x_tensor_train = tf.nn.embedding_lookup(
+    params=W, ids=x, max_norm=None, name=None)
+logger.info(f"shape x_tensor_train {x_tensor_train.shape}")
+author_tensor_train = tf.nn.embedding_lookup(
+    params=user_embeddings, ids=author_train, max_norm=None, name=None)
+logger.info(f"shape author_tensor_train {author_tensor_train.shape}")
+topic_tensor_train = tf.nn.embedding_lookup(
+    params=topic_embeddings, ids=topic_train, max_norm=None, name=None)
+logger.info(f"shape topic_tensor_train {topic_tensor_train.shape}")
 
-# # Test
-# x_tensor_test = tf.nn.embedding_lookup(
-#     params=W, ids=x_test, max_norm=None, name=None)
-# logger.info(f"shape x_tensor_test {x_tensor_test.shape}")
-# author_tensor_test = tf.nn.embedding_lookup(
-#     params=user_embeddings, ids=author_test, max_norm=None, name=None)
-# logger.info(f"shape author_tensor_test {author_tensor_test.shape}")
-# topic_tensor_test = tf.nn.embedding_lookup(
-#     params=topic_embeddings, ids=topic_test, max_norm=None, name=None)
-# logger.info(f"shape topic_tensor_test {topic_tensor_test.shape}")
+# Test
+x_tensor_test = tf.nn.embedding_lookup(
+    params=W, ids=x_test, max_norm=None, name=None)
+logger.info(f"shape x_tensor_test {x_tensor_test.shape}")
+author_tensor_test = tf.nn.embedding_lookup(
+    params=user_embeddings, ids=author_test, max_norm=None, name=None)
+logger.info(f"shape author_tensor_test {author_tensor_test.shape}")
+topic_tensor_test = tf.nn.embedding_lookup(
+    params=topic_embeddings, ids=topic_test, max_norm=None, name=None)
+logger.info(f"shape topic_tensor_test {topic_tensor_test.shape}")
 
-# # Write tensors to pickles:
-# logger.warning("Writing tensors to files")
-# os.makedirs("./tensor/train/")
+# Write embeddings to pickles:
+logger.warning("Writing tensors to files")
+os.makedirs("./tensor/train/")
 
-# pickle.dump(x_tensor_train, open("./tensor/train/x_tensor.p", "wb"))
-# pickle.dump(author_tensor_train, open("./tensor/train/user_tensor.p", "wb"))
-# pickle.dump(topic_tensor_train, open("./tensor/train/topic_tensor.p", "wb"))
+np.save('./tensor/train/x_tensor.npy', x_tensor_train, allow_pickle=False)
+np.save('./tensor/train/user_tensor.npy', author_tensor_train, allow_pickle=False)
+np.save('./tensor/train/topic_tensor.npy', topic_tensor_train, allow_pickle=False)
 
-# os.makedirs("./tensor/test/")
+os.makedirs("./tensor/test/")
 
-# pickle.dump(x_tensor_test, open("./tensor/test/x_tensor.p", "wb"))
-# pickle.dump(author_tensor_test, open("./tensor/test/user_tensor.p", "wb"))
-# pickle.dump(topic_tensor_test, open("./tensor/test/topic_tensor.p", "wb"))
+np.save('./tensor/test/x_tensor.npy', x_tensor_test, allow_pickle=False)
+np.save('./tensor/test/user_tensor.npy', author_tensor_test, allow_pickle=False)
+np.save('./tensor/test/topic_tensor.npy', topic_tensor_test, allow_pickle=False)
 
 logger.warning("\n===============\nPreparing finished!\n===============")
 # # Fake data:
@@ -319,7 +319,7 @@ logger.warning("\n===============\nPreparing finished!\n===============")
 # topic_test = topic_train
 # author_test = author_train
 
-# # Create folds indices: 
+# # Create folds indices:
 # shuffle_indices = np.random.permutation(np.arange(len(y)))
 # NFOLD = 5
 # leftover = (len(shuffle_indices) % NFOLD)
@@ -331,7 +331,7 @@ logger.warning("\n===============\nPreparing finished!\n===============")
 #     folds = np.split(
 #         shuffle_indices,
 #         NFOLD)
-        
+
 # fold1, fold2, fold3, fold4, fold5 = folds[0], folds[1], folds[2], folds[3], folds[4]
 
 
