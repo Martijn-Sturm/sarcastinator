@@ -1,11 +1,13 @@
 from tensorflow.keras import Input, Model, Sequential
 from tensorflow.keras.activations import relu, sigmoid, softmax
 from tensorflow.keras.initializers import he_normal
-from tensorflow.keras.layers import Dense, InputLayer, Conv1D, GlobalMaxPool1D, Concatenate, Flatten
+from tensorflow.keras.layers import Dense, InputLayer, Conv1D, GlobalMaxPool1D, Concatenate, Flatten, Dropout
 from tensorflow.keras.losses import binary_crossentropy
 from tensorflow.keras.metrics import Accuracy
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
+
+from tensorflow.keras.regularizers import l2
 
 from logger import get_logger
 
@@ -75,10 +77,20 @@ def cnn2(input_shape_x, input_shape_author, input_shape_topic,
          logger, dense_layers=32, optimizer="Adam",
          init="he_normal",
          num_filters=32, filter_sizes=(3, 4, 5), activation="relu",
-         padding="valid"):
+         padding="valid", l2_float=0.0, dropout=0.0):
     """Convolution Network WITH merging of other feature vectors
     """
 
+    param_dict = {
+        "num filters": num_filters,
+        "filter sizes": filter_sizes,
+        "padding": padding,
+        "activation": activation,
+        "n dense layer": dense_layers,
+        "l2 regu": l2_float,
+        "drop-out": dropout,
+        "kernel init": init
+    }
     # Check if the right shape was passed as argument
     if len(input_shape_x) != 2:
         raise Exception("Input shape needs to have 2 dimensions.",
@@ -104,7 +116,8 @@ def cnn2(input_shape_x, input_shape_author, input_shape_topic,
             padding=padding,
             activation=activation,
             kernel_initializer=init,
-            data_format="channels_last"
+            data_format="channels_last",
+            kernel_regularizer=l2(l2_float)
             )(i_x)
         pooled = GlobalMaxPool1D()(conv)
         conv_compl.append(pooled)
@@ -112,6 +125,7 @@ def cnn2(input_shape_x, input_shape_author, input_shape_topic,
     # Concatenate and flatten different convolutional
     # Filter outputs
     conv_merged = Concatenate()(conv_compl)
+    conv_merged = Dropout(dropout)(conv_merged)
     o_x = Flatten()(conv_merged)
     model_x = Model(inputs=i_x, outputs=o_x)
 
@@ -136,7 +150,9 @@ def cnn2(input_shape_x, input_shape_author, input_shape_topic,
     dense = Dense(
         units=dense_layers,
         activation=activation,
-        kernel_initializer=init)(features_comb)
+        kernel_initializer=init,
+        kernel_regularizer=l2(l2_float))(features_comb)
+    dense = Dropout(dropout)(dense)
 
     # Output layer
     o = Dense(
@@ -150,7 +166,7 @@ def cnn2(input_shape_x, input_shape_author, input_shape_topic,
     # Compile model
     model_tot.compile(
         loss='binary_crossentropy', optimizer=optimizer, metrics=['accuracy'])
-    return(model_tot)
+    return(model_tot, param_dict)
 
 
 # # Simple comment only model
