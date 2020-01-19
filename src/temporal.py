@@ -9,20 +9,26 @@ from tensorflow.keras.metrics import Accuracy
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
 
+from logger import get_logger
 
-def tcn1(input_shape, logger, optimizer="Adam", init="he_normal"):
+
+def tcn1(input_shape, logger,
+         nb_filters=128,
+         filter_size=2,
+         optimizer="Adam",
+         init="he_normal"):
 
     # Calculate number of blocks:
     def calc_dilations(filter_size, field):
         import math
         max_dil = field / filter_size
         max_dil = math.ceil(math.log(max_dil) / math.log(2))
-        dil_list = [2**i for i in range(0,max_dil+1)]
+        dil_list = [2**i for i in range(0, max_dil+1)]
         return(dil_list)
 
     # TCN params
-    nb_filters = 8
-    filter_size = 2
+    nb_filters = nb_filters
+    filter_size = filter_size
     dilation_list = calc_dilations(
         filter_size=filter_size,
         field=input_shape[1])
@@ -65,3 +71,7 @@ def tcn1(input_shape, logger, optimizer="Adam", init="he_normal"):
     model.compile(loss='binary_crossentropy', optimizer='Adam', metrics=['accuracy'])
 
     return model
+
+
+# check_model = tcn1((100, 300), logger=get_logger("temporal_check"))
+# check_model.summary()
