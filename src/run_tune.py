@@ -14,6 +14,8 @@ from contextlib import redirect_stdout
 from logger import get_logger
 from logger import config_thr_exc_log
 
+from results_train import proc_results
+
 # from temporal import tcn1  # , tcn2
 from orig_cnn import cnn2  # ,cnn1
 
@@ -23,7 +25,7 @@ config_thr_exc_log()
 
 # Params:
 batch_size = 4000
-epochs = 50
+epochs = 100
 
 # ====================== LOAD DATA ====================================
 
@@ -95,61 +97,210 @@ logger.info(f'Input shape x: {input_shape_x}')
 logger.info(f'Input shape author: {input_shape_author}')
 logger.info(f'Input shape topic: {input_shape_topic}')
 
-
-# Load model
-logger.warning("Creating model...")
-
-# # tcn model
-# model = tcn1(input_shape=input_shape_x, logger=logger)
-
-# cnn model with merging of features
-model = cnn2(
-    input_shape_x=input_shape_x,
-    input_shape_topic=input_shape_topic,
-    input_shape_author=input_shape_author,
-    logger=logger)
-
-logger.warning("Model created.")
-
-# Determine number of params
-mod_params = model.count_params()
-logger.warning(f"Model params: {mod_params}")
-
-# Save model summary
-with open('./logs/modelsummary.txt', 'w') as f:
-    with redirect_stdout(f):
-        model.summary()
-
 # Callbacks:
 callbacks = [
-    # tf.keras.callbacks.EarlyStopping(
-    #     # Stop training when `val_loss` is no longer improving
-    #     monitor='val_loss',
-    #     # "no longer improving" being defined as "no better than 1e-2 less"
-    #     min_delta=1e-2,
-    #     # "no longer improving" being further defined as "for at least 2 epochs"
-    #     patience=2,
-    #     verbose=1),
+    tf.keras.callbacks.EarlyStopping(
+        # Stop training when `val_loss` is no longer improving
+        monitor='val_loss',
+        # "no longer improving" being defined as "no better than 1e-2 less"
+        min_delta=1e-2,
+        # "no longer improving" being further defined as "for at least 2 epochs"
+        patience=2,
+        verbose=1),
     tf.keras.callbacks.ProgbarLogger(
         count_mode='samples', stateful_metrics=None),
     tf.keras.callbacks.BaseLogger(
         stateful_metrics=None)
 ]
 
-# Run model fitting
+# cnn model with merging of features
+logger.warning("Creating model...")
+model1, param_dict1 = cnn2(
+    input_shape_x=input_shape_x,
+    input_shape_topic=input_shape_topic,
+    input_shape_author=input_shape_author,
+    logger=logger,
+    l2_float=0.001, dropout=0.2)
+logger.warning("Model created.")
 logger.warning("Model training is initiated...")
-result = model.fit(
+result1 = model1.fit(
     [x_train, author_train, topic_train], 
     y_train, batch_size=batch_size, epochs=epochs,
     verbose=1, callbacks=callbacks, validation_split=0.1)
 logger.warning("Model training is finished.")
+proc_results(result1, model1, "CNN-1", logger, **param_dict1,
+             **{"Batchsize":batch_size})
 
-accs_train = result.history['accuracy']
-accs_val = result.history['val_accuracy']
-logger.info(f"Training accuracy per epoch: {accs_train}")
-logger.info(f"Validation accuracy per epoch: {accs_val}")
+logger.warning("Creating model...")
+model1, param_dict1 = cnn2(
+    input_shape_x=input_shape_x,
+    input_shape_topic=input_shape_topic,
+    input_shape_author=input_shape_author,
+    logger=logger,
+    l2_float=0.001, dropout=0.2, filter_sizes=(6, 7, 8))
+logger.warning("Model created.")
+logger.warning("Model training is initiated...")
+result1 = model1.fit(
+    [x_train, author_train, topic_train], 
+    y_train, batch_size=batch_size, epochs=epochs,
+    verbose=1, callbacks=callbacks, validation_split=0.1)
+logger.warning("Model training is finished.")
+proc_results(result1, model1, "CNN-2", logger, **param_dict1,
+             **{"Batchsize":batch_size})
 
-loss_train = result.history['loss']
-loss_val = result.history['val_loss']
-logger.info(f"Training accuracy per epoch: {loss_train}")
-logger.info(f"Validation accuracy per epoch: {loss_val}")
+logger.warning("Creating model...")
+model1, param_dict1 = cnn2(
+    input_shape_x=input_shape_x,
+    input_shape_topic=input_shape_topic,
+    input_shape_author=input_shape_author,
+    logger=logger,
+    l2_float=0.001, dropout=0.2,
+    num_filters=64)
+logger.warning("Model created.")
+logger.warning("Model training is initiated...")
+result1 = model1.fit(
+    [x_train, author_train, topic_train], 
+    y_train, batch_size=batch_size, epochs=epochs,
+    verbose=1, callbacks=callbacks, validation_split=0.1)
+logger.warning("Model training is finished.")
+proc_results(result1, model1, "CNN-3", logger, **param_dict1,
+             **{"Batchsize":batch_size})
+
+logger.warning("Creating model...")
+model1, param_dict1 = cnn2(
+    input_shape_x=input_shape_x,
+    input_shape_topic=input_shape_topic,
+    input_shape_author=input_shape_author,
+    logger=logger,
+    l2_float=0.001, dropout=0.2,
+    num_filters=16)
+logger.warning("Model created.")
+logger.warning("Model training is initiated...")
+result1 = model1.fit(
+    [x_train, author_train, topic_train], 
+    y_train, batch_size=batch_size, epochs=epochs,
+    verbose=1, callbacks=callbacks, validation_split=0.1)
+logger.warning("Model training is finished.")
+proc_results(result1, model1, "CNN-4", logger, **param_dict1,
+             **{"Batchsize":batch_size})
+
+logger.warning("Creating model...")
+model1, param_dict1 = cnn2(
+    input_shape_x=input_shape_x,
+    input_shape_topic=input_shape_topic,
+    input_shape_author=input_shape_author,
+    logger=logger,
+    l2_float=0.001, dropout=0.2,
+    dense_layers=16)
+logger.warning("Model created.")
+logger.warning("Model training is initiated...")
+result1 = model1.fit(
+    [x_train, author_train, topic_train], 
+    y_train, batch_size=batch_size, epochs=epochs,
+    verbose=1, callbacks=callbacks, validation_split=0.1)
+logger.warning("Model training is finished.")
+proc_results(result1, model1, "CNN-5", logger, **param_dict1,
+             **{"Batchsize":batch_size})
+
+logger.warning("Creating model...")
+model1, param_dict1 = cnn2(
+    input_shape_x=input_shape_x,
+    input_shape_topic=input_shape_topic,
+    input_shape_author=input_shape_author,
+    logger=logger,
+    l2_float=0.001, dropout=0.2,
+    dense_layers=64)
+logger.warning("Model created.")
+logger.warning("Model training is initiated...")
+result1 = model1.fit(
+    [x_train, author_train, topic_train], 
+    y_train, batch_size=batch_size, epochs=epochs,
+    verbose=1, callbacks=callbacks, validation_split=0.1)
+logger.warning("Model training is finished.")
+proc_results(result1, model1, "CNN-6", logger, **param_dict1,
+             **{"Batchsize":batch_size})
+
+logger.warning("Creating model...")
+model1, param_dict1 = cnn2(
+    input_shape_x=input_shape_x,
+    input_shape_topic=input_shape_topic,
+    input_shape_author=input_shape_author,
+    logger=logger,
+    l2_float=0.001, dropout=0.5)
+logger.warning("Model created.")
+logger.warning("Model training is initiated...")
+result1 = model1.fit(
+    [x_train, author_train, topic_train], 
+    y_train, batch_size=batch_size, epochs=epochs,
+    verbose=1, callbacks=callbacks, validation_split=0.1)
+logger.warning("Model training is finished.")
+proc_results(result1, model1, "CNN-7", logger, **param_dict1,
+             **{"Batchsize":batch_size})
+
+logger.warning("Creating model...")
+model1, param_dict1 = cnn2(
+    input_shape_x=input_shape_x,
+    input_shape_topic=input_shape_topic,
+    input_shape_author=input_shape_author,
+    logger=logger,
+    l2_float=0.01, dropout=0.5)
+logger.warning("Model created.")
+logger.warning("Model training is initiated...")
+result1 = model1.fit(
+    [x_train, author_train, topic_train], 
+    y_train, batch_size=batch_size, epochs=epochs,
+    verbose=1, callbacks=callbacks, validation_split=0.1)
+logger.warning("Model training is finished.")
+proc_results(result1, model1, "CNN-8", logger, **param_dict1,
+             **{"Batchsize":batch_size})
+
+logger.warning("Creating model...")
+model1, param_dict1 = cnn2(
+    input_shape_x=input_shape_x,
+    input_shape_topic=input_shape_topic,
+    input_shape_author=input_shape_author,
+    logger=logger,
+    l2_float=0.01, dropout=0.2)
+logger.warning("Model created.")
+logger.warning("Model training is initiated...")
+result1 = model1.fit(
+    [x_train, author_train, topic_train], 
+    y_train, batch_size=batch_size, epochs=epochs,
+    verbose=1, callbacks=callbacks, validation_split=0.1)
+logger.warning("Model training is finished.")
+proc_results(result1, model1, "CNN-9", logger, **param_dict1,
+             **{"Batchsize":batch_size})
+
+logger.warning("Creating model...")
+model1, param_dict1 = cnn2(
+    input_shape_x=input_shape_x,
+    input_shape_topic=input_shape_topic,
+    input_shape_author=input_shape_author,
+    logger=logger,
+    l2_float=0.01, dropout=0.2)
+logger.warning("Model created.")
+logger.warning("Model training is initiated...")
+result1 = model1.fit(
+    [x_train, author_train, topic_train], 
+    y_train, batch_size=1000, epochs=epochs,
+    verbose=1, callbacks=callbacks, validation_split=0.1)
+logger.warning("Model training is finished.")
+proc_results(result1, model1, "CNN-10", logger, **param_dict1,
+             **{"Batchsize":1000})
+
+logger.warning("Creating model...")
+model1, param_dict1 = cnn2(
+    input_shape_x=input_shape_x,
+    input_shape_topic=input_shape_topic,
+    input_shape_author=input_shape_author,
+    logger=logger,
+    l2_float=0.01, dropout=0.2)
+logger.warning("Model created.")
+logger.warning("Model training is initiated...")
+result1 = model1.fit(
+    [x_train, author_train, topic_train], 
+    y_train, batch_size=10000, epochs=epochs,
+    verbose=1, callbacks=callbacks, validation_split=0.1)
+logger.warning("Model training is finished.")
+proc_results(result1, model1, "CNN-10", logger, **param_dict1,
+             **{"Batchsize":10000})
