@@ -1,5 +1,7 @@
 requirements2.txt !! some packages changed !!
 
+Delete the logs and input/data folder
+
 ```bash
 cd src
 ```
@@ -23,12 +25,17 @@ python prepare.py
 The following folders should be created in src directory:
 input_data/train
 input_data/test
-These should contain "x.p", "y.p", "word_embs.p", and files for author and topic.
+input_data/embs
+
+And:
+tensor/train/
+tensor/test/
+These should contain "x.p", "y.p", and files for author and topic.
 Check this.
 
 Then run:
 ```bash
-python run_single.py
+python run_tune.py
 ```
 
 Gather the logs folder in the src directory, and commit and push this to our repo.
