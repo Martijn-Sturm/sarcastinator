@@ -3,6 +3,7 @@ import pickle
 import numpy as np
 import os
 import csv
+import tensorflow as tf
 
 
 from logger import get_logger
@@ -197,13 +198,57 @@ if len(y_test.shape) != 1:
     raise Exception("New test_y has not 1 dimension. Shape:", y_test.shape)
 logger.warning("Transforming labels finished")
 
+# Check for decimals in lookup arrays:
+# Train
+x_dec = np.count_nonzero(np.modf(x)[0])
+logger.info(f"non 0 decimals in x: {x_dec}")
+y_dec = np.count_nonzero(np.modf(y)[0])
+logger.info(f"non 0 decimals in y: {y_dec}")
+author_train_dec = np.count_nonzero(np.modf(author_train)[0])
+logger.info(f"non 0 decimals in author_train: {author_train_dec}")
+topic_train_dec = np.count_nonzero(np.modf(topic_train)[0])
+logger.info(f"non 0 decimals in topic_train: {topic_train_dec}")
+
+ls_dec_train = [x_dec, y_dec, author_train_dec, topic_train_dec]
+for i in ls_dec_train:
+    if i > 0:
+        raise Exception("Decimals found: ", i, "Check log for more info")
+
+# Test
+x_test_dec = np.count_nonzero(np.modf(x_test)[0])
+logger.info(f"non 0 decimals in x: {x_test_dec}")
+y_test_dec = np.count_nonzero(np.modf(y_test)[0])
+logger.info(f"non 0 decimals in y: {y_test_dec}")
+author_test_dec = np.count_nonzero(np.modf(author_test)[0])
+logger.info(f"non 0 decimals in author_test: {author_test_dec}")
+topic_test_dec = np.count_nonzero(np.modf(topic_test)[0])
+logger.info(f"non 0 decimals in topic_test: {topic_test_dec}")
+
+ls_dec_test = [x_test_dec, y_test_dec, author_test_dec, topic_test_dec]
+for i in ls_dec_test:
+    if i > 0:
+        raise Exception("Decimals found: ", i, "Check log for more info")
+
+# Casting:
+# Train
+x = x.astype(dtype="int64", casting='unsafe')
+y = y.astype(dtype="int64", casting='unsafe')
+author_train = author_train.astype(dtype="int64", casting='unsafe')
+topic_train = topic_train.astype(dtype="int64", casting='unsafe')
+
+# Test
+x_test = x_test.astype(dtype="int64", casting='unsafe')
+y_test = y_test.astype(dtype="int64", casting='unsafe')
+author_test = author_test.astype(dtype="int64", casting='unsafe')
+topic_test = topic_test.astype(dtype="int64", casting='unsafe')
+
 # Write train data to pickles:
 logger.warning("Writing train data to files")
 os.makedirs("./input_data/train/")
 
 pickle.dump(x, open("./input_data/train/x.p", "wb"))
 pickle.dump(y, open("./input_data/train/y.p", "wb"))
-pickle.dump(W, open("./input_data/train/word_embs.p", "wb"))
+
 pickle.dump(topic_train, open("./input_data/train/topic_train.p", "wb"))
 pickle.dump(author_train, open("./input_data/train/author_train.p", "wb"))
 
@@ -216,6 +261,52 @@ pickle.dump(y_test, open("./input_data/test/y.p", "wb"))
 pickle.dump(W, open("./input_data/test/word_embs.p", "wb"))
 pickle.dump(topic_test, open("./input_data/test/topic_test.p", "wb"))
 pickle.dump(author_test, open("./input_data/test/author_test.p", "wb"))
+
+# Write embeddings to pickles:
+logger.warning("Writing embeddings to files")
+os.makedirs("./input_data/embs/")
+
+pickle.dump(W, open("./input_data/embs/word_embs.p", "wb"))
+pickle.dump(user_embeddings, open("./input_data/embs/user_embs.p", "wb"))
+pickle.dump(topic_embeddings, open("./input_data/embs/topic_embs.p", "wb"))
+
+
+# Create tensor imputs:
+# Train
+x_tensor_train = tf.nn.embedding_lookup(
+    params=W, ids=x, max_norm=None, name=None)
+logger.info(f"shape x_tensor_train {x_tensor_train.shape}")
+author_tensor_train = tf.nn.embedding_lookup(
+    params=user_embeddings, ids=author_train, max_norm=None, name=None)
+logger.info(f"shape author_tensor_train {author_tensor_train.shape}")
+topic_tensor_train = tf.nn.embedding_lookup(
+    params=topic_embeddings, ids=topic_train, max_norm=None, name=None)
+logger.info(f"shape topic_tensor_train {topic_tensor_train.shape}")
+
+# Test
+x_tensor_test = tf.nn.embedding_lookup(
+    params=W, ids=x_test, max_norm=None, name=None)
+logger.info(f"shape x_tensor_test {x_tensor_test.shape}")
+author_tensor_test = tf.nn.embedding_lookup(
+    params=user_embeddings, ids=author_test, max_norm=None, name=None)
+logger.info(f"shape author_tensor_test {author_tensor_test.shape}")
+topic_tensor_test = tf.nn.embedding_lookup(
+    params=topic_embeddings, ids=topic_test, max_norm=None, name=None)
+logger.info(f"shape topic_tensor_test {topic_tensor_test.shape}")
+
+# Write embeddings to pickles:
+logger.warning("Writing tensors to files")
+os.makedirs("./tensor/train/")
+
+pickle.dump(x_tensor_train, open("./tensor/train/x_tensor.p", "wb"))
+pickle.dump(author_tensor_train, open("./tensor/train/user_tensor.p", "wb"))
+pickle.dump(topic_tensor_train, open("./tensor/train/topic_tensor.p", "wb"))
+
+os.makedirs("./tensor/test/")
+
+pickle.dump(x_tensor_test, open("./tensor/test/x_tensor.p", "wb"))
+pickle.dump(author_tensor_test, open("./tensor/test/user_tensor.p", "wb"))
+pickle.dump(topic_tensor_test, open("./tensor/test/topic_tensor.p", "wb"))
 
 logger.warning("\n===============\nPreparing finished!\n===============")
 # # Fake data:
