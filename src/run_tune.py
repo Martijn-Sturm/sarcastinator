@@ -29,16 +29,16 @@ epochs = 50
 
 # Real data:
 logger.warning("Loading train data...")
-x_train = pickle.load(open("./tensor/train/x_tensor.p", "rb"))
-author_train = pickle.load(open("./tensor/train/user_tensor.p", "rb"))
-topic_train = pickle.load(open("./tensor/train/topic_tensor.p", "rb"))
+x_train = np.load('./tensor/train/x_tensor.npy')
+author_train = np.load('./tensor/train/user_tensor.npy')
+topic_train = np.load('./tensor/train/topic_tensor.npy')
 
 logger.info(f"x_train shape: {x_train.shape}")
 logger.info(f"author_train shape: {author_train.shape}")
 logger.info(f"topic_train shape: {topic_train.shape}")
 
 # Labels
-y_train = pickle.load(open("./tensor/train/y.p", "rb"))
+y_train = np.load('./tensor/train/y.p', allow_pickle=True)
 logger.info(f"y_train shape: {y_train.shape}")
 logger.warning("Loading data is finished")
 
