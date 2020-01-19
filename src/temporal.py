@@ -64,7 +64,7 @@ def tcn1(input_shape, logger,
         )(i)
 
     # Output Layer
-    o = Dense(1, activation=softmax)(o)
+    o = Dense(1, activation="sigmoid")(o)
 
     model = Model(inputs=[i], outputs=[o])
     # Compile model

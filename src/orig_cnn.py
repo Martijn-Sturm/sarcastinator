@@ -60,7 +60,7 @@ def cnn1(input_shape, logger, dense_layers=16, optimizer="Adam",
     # Output layer
     o = Dense(
         units=1,
-        activation="softmax"
+        activation="sigmoid"
     )(dense)
 
     # Define model
@@ -141,7 +141,7 @@ def cnn2(input_shape_x, input_shape_author, input_shape_topic,
     # Output layer
     o = Dense(
         units=1,
-        activation="softmax"
+        activation="sigmoid"
     )(dense)
 
     # Define model
