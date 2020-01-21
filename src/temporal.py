@@ -79,7 +79,7 @@ def tcn2(input_shape_x, input_shape_author, input_shape_topic,
          init="he_normal",
          num_filters=32, filter_sizes=[3], activation="relu",
          padding="same", l2_float=0.0, dropout=0.0,
-         skips=True, dil_cor=0):
+         skips=True, num_stacks=0):
     """Convolution Network WITH merging of other feature vectors
     """
     optimizer = Adam(learning_rate=learn_rate)
@@ -94,7 +94,7 @@ def tcn2(input_shape_x, input_shape_author, input_shape_topic,
         "drop-out": dropout,
         "kernel init": init,
         "skip connections": skips,
-        "dilation correction": dil_cor,
+        "n stacks": num_stacks,
         "learn rate": learn_rate
     }
     # Check if the right shape was passed as argument
@@ -109,11 +109,11 @@ def tcn2(input_shape_x, input_shape_author, input_shape_topic,
     # embedding_size = input_shape[1]
 
     # Calculate number of blocks:
-    def calc_dilations(filter_size, field, dil_cor=0):
+    def calc_dilations(filter_size, field, stacks):
         import math
-        max_dil = field / filter_size
-        max_dil = math.ceil(math.log(max_dil) / math.log(2))
-        dil_list = [2**i for i in range(0, max_dil+1-int(dil_cor))]
+        max_dil = field / filter_size / stacks
+        max_dil = math.ceil(math.log(max_dil)/math.log(2))
+        dil_list = [2**i for i in range(0, max_dil+1)]
         return(dil_list)
 
     # Convolutional layes
@@ -124,7 +124,8 @@ def tcn2(input_shape_x, input_shape_author, input_shape_topic,
         # Determine dilation list:
         dilation_list = calc_dilations(
             filter_size=filter_size,
-            field=input_shape_x[1])
+            field=input_shape_x[0],
+            stacks=num_stacks)
         logger.info(f"Dilation list: {dilation_list}")
 
         o_tcn = TCN(
@@ -139,7 +140,7 @@ def tcn2(input_shape_x, input_shape_author, input_shape_topic,
             use_batch_norm=False,
             use_layer_norm=True,
             return_sequences=False,
-            nb_stacks=1
+            nb_stacks=num_stacks
             )(i_x)
         tcn_compl.append(o_tcn)
     # Concatenate and flatten different convolutional
