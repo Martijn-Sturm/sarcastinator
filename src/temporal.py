@@ -78,8 +78,8 @@ def tcn2(input_shape_x, input_shape_author, input_shape_topic,
          logger, dense_layers=32, learn_rate=0.001,
          init="he_normal",
          num_filters=32, filter_sizes=[3], activation="relu",
-         padding="same", l2_float=0.0, dropout=0.0,
-         skips=True, num_stacks=0):
+         padding="same", l2_float=0.001, dropout=0.2,
+         skips=True, num_stacks=2):
     """Convolution Network WITH merging of other feature vectors
     """
     optimizer = Adam(learning_rate=learn_rate)
@@ -192,5 +192,5 @@ def tcn2(input_shape_x, input_shape_author, input_shape_topic,
         loss='binary_crossentropy', optimizer=optimizer, metrics=['accuracy'])
     return(model_tot, param_dict)
 
-# check_model = tcn1((100, 300), logger=get_logger("temporal_check"))
+# check_model = tcn1((-1, 300), logger=get_logger("temporal_check"))
 # check_model.summary()
