@@ -10,10 +10,10 @@ def proc_results(result, model, filename, logger, param_dict, **kwargs):
     loss_val = result.history['val_loss']
 
     max_acc_train = max(accs_train)
-    max_loss_train = max(loss_train)
+    max_loss_train = min(loss_train)
 
     max_acc_val = max(accs_val)
-    max_loss_val = max(loss_val)
+    max_loss_val = min(loss_val)
 
     n_params = model.count_params()
 
