@@ -99,7 +99,7 @@ if real_data:
     logger.info(f"topic_test shape: {topic_test.shape}")
 
     # Labels
-    y_test = pickle.load(open("./tensor/test/y.p", "rb"))
+    y_test = pickle.load(open("./input_data/test/y.p", "rb"))
     logger.info(f"y_test shape: {y_test.shape}")
     logger.warning("Loading data is finished")
 
