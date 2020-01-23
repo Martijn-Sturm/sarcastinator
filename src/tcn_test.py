@@ -143,6 +143,8 @@ logger.info(f'Input shape x: {input_shape_x}')
 logger.info(f'Input shape author: {input_shape_author}')
 logger.info(f'Input shape topic: {input_shape_topic}')
 
+os.makedirs("./model/", exist_ok=True)
+
 # Callbacks:
 callbacks = [
     tf.keras.callbacks.EarlyStopping(
@@ -157,17 +159,16 @@ callbacks = [
     tf.keras.callbacks.ProgbarLogger(
         count_mode='samples', stateful_metrics=None),
     tf.keras.callbacks.BaseLogger(
-        stateful_metrics=None) #,
-    # tf.keras.callbacks.ModelCheckpoint(
-    #     filepath="./models/checksave",
-    #     monitor="val_loss",
-    #     save_best_only=True
-    # )
+        stateful_metrics=None),
+    tf.keras.callbacks.ModelCheckpoint(
+        filepath="./model/checksave",
+        monitor="val_loss",
+        save_best_only=True
+    )
 ]
 
 # Results dict
 ls_res_dicts = []
-
 
 # Model compiling
 logger.warning("Creating model...")
@@ -180,8 +181,6 @@ model1, param_dict1 = tcn2(
 # Training
 i = 1
 save_name = f"{first_name}-{str(i)}"
-
-# os.makedirs("./model/", exist_ok=True)
 
 logger.warning("Model created.")
 logger.warning("Model training is initiated...")
@@ -196,13 +195,6 @@ ls_res_dicts.append(res_dict)
 df = pd.DataFrame(ls_res_dicts)
 df.to_csv(f"./results/df{first_name}.csv")
 
-# Save model:
-# try:
-#     model1.save('./model/modelsave')
-# except Exception:
-#     logger.warning("Model saving did not work. Continue with evaluation on test set.")
-
-
 # Testing
 
 logger.warning("Evaluation is initiated")
@@ -214,3 +206,6 @@ logger.warning("Evaluation ended.")
 
 logger.warning(f"evaluation loss: {eval_result[0]}")
 logger.warning(f"evaluation accuracy: {eval_result[1]}")
+
+# Save model:
+model1.save('./model/modelsave')
