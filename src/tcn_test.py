@@ -24,6 +24,10 @@ from temporal import tcn2  # , tcn2
 
 first_name = "tcntest"
 
+if os.environ.get("SGE_TASK_ID"):
+    runid = os.environ["SGE_TASK_ID"]
+    first_name = f"{first_name}-a{runid}"
+
 # Loggers
 logger = get_logger(filename=first_name, name=__name__)
 config_thr_exc_log()
@@ -80,7 +84,9 @@ if real_data:
     if len(sample_set) > 1:
         raise Exception("Different sample sizes for input features train")
 
-    np.random.seed(10)
+    if not os.environ.get("SGE_TASK_ID"):
+        np.random.seed(10)
+
     shuffle_indices = np.random.permutation(np.arange(len(y_train)))
     x_train = x_train[shuffle_indices]
     y_train = y_train[shuffle_indices]
