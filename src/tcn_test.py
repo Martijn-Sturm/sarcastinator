@@ -167,7 +167,7 @@ callbacks = [
     tf.keras.callbacks.BaseLogger(
         stateful_metrics=None),
     tf.keras.callbacks.ModelCheckpoint(
-        filepath="./model/checksave",
+        filepath=f"./model/{first_name}-checksave",
         monitor="val_loss",
         save_best_only=True
     )
@@ -214,4 +214,4 @@ logger.warning(f"evaluation loss: {eval_result[0]}")
 logger.warning(f"evaluation accuracy: {eval_result[1]}")
 
 # Save model:
-model1.save('./model/modelsave')
+model1.save(f'./model-{save_name}/modelsave')
