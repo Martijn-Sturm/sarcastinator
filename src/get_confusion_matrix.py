@@ -12,7 +12,6 @@ from logger import get_logger, config_thr_exc_log
 
 import tensorflow as tf
 import numpy as np
-from sklearn.metrics import confusion_matrix
 
 
 def load_model_from(path: Path):
@@ -24,10 +23,13 @@ def load_model_from(path: Path):
     return tf.keras.models.load_model(str(path))
 
 
-if __name__ == "__main__":
-    path = Path(sys.argv[1])
-    model = load_model_from(path)
+def get_confusion_matrix(model, x_test, author_test, topic_test, y_test):
+    prediction = model.predict([x_test, author_test, topic_test])
+    return tf.math.confusion_matrix(y_test, np.around(prediction).astype(int))
 
+
+if __name__ == "__main__":
+    print("-- Loading data")
     x_test = np.load("./tensor/test/x_tensor.npy")
     author_test = np.load("./tensor/test/user_tensor.npy")
     topic_test = np.load("./tensor/test/topic_tensor.npy")
@@ -35,7 +37,15 @@ if __name__ == "__main__":
     with open("./input_data/test/y.p", "rb") as y_test_file:
         y_test = pickle.load(y_test_file)
 
-    prediction = model.predict([x_test, author_test, topic_test], y_test)
+    print("-- Data loaded")
 
-    cnf_matrix = confusion_matrix(y_test, prediction)
-    print(cnf_matrix)
+    for model_path in Path('.').glob('model-tcntest-a*-1/modelsave'):
+        model_name = model_path.parent.name
+        print(f"-- Loading model {model_name}")
+        model = load_model_from(model_path)
+
+        cnf_matrix = get_confusion_matrix(model, x_test, author_test, topic_test, y_test)
+        m = cnf_matrix.numpy()
+
+        print(f"== Confusion matrix for {model_name} ==")
+        print(f"{m[0,0]}\t{m[0,1]}\n{m[1,0]}\t{m[1,1]}\n")
