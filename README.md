@@ -1,3 +1,8 @@
+# Disclaimer
+We used the code from https://github.com/SenticNet/CASCADE as basis for a small project for a course at Utrecht University. See the commit history for what has been adjusted by us and what has been produced by the original authors of CASCADE.
+
+Here Follows the README of the original CASCADE repository
+
 # CASCADE: Contextual Sarcasm Detection in Online Discussion Forums
 
 Code for the paper [CASCADE: Contextual Sarcasm Detection in Online Discussion Forums](http://aclweb.org/anthology/C18-1156) (COLING 2018, New Mexico).
